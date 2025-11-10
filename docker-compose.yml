@@ -1,0 +1,26 @@
+# docker-compose.yml
+version: '3.8'
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Mount the seed script and data file/ingestion script
+      - ./data/db-seed.sh:/docker-entrypoint-initdb.d/db-seed.sh 
+      - ./data/Analytics_Test_Data.json:/data/Analytics_Test_Data.json 
+      - ./data/ingestion.py:/data/ingestion.py 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
